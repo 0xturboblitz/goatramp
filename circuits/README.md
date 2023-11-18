@@ -1,6 +1,6 @@
 # Circuits for credit card signature
 
-This circuit performs modular exponentiation by 3. Based on zk-email implementation of modular exponentiation.
+This circuit performs modular exponentiation by 3. Based on zk-email implementation of rsa signature (I believe, borrowed from double-blind).
 
 🚧 under heavy development 🚧
 
