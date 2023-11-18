@@ -46,6 +46,12 @@ async function main() {
   console.log('proof', proof)
   console.log('publicSignals', publicSignals)
 
+  if (!fs.existsSync('outputs')){
+    fs.mkdirSync('outputs');
+  }
+  fs.writeFileSync("outputs/proof.json", JSON.stringify(proof));
+  fs.writeFileSync("outputs/publicSignals.json", JSON.stringify(publicSignals));
+
   const vKey = JSON.parse(fs.readFileSync("build/verification_key.json", 'utf8'));
   const verified = await groth16.verify(
     vKey,
