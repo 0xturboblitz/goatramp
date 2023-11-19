@@ -1,6 +1,6 @@
-# GOATRAMP contracts
+# GOAT RAMP contracts
 
-Contracts for GOATRAMP.
+Contracts for GOAT RAMP.
 
 🚧 under heavy development 🚧
 
