@@ -8,7 +8,7 @@ Most often, the bank replies with an other signature to confirm the transaction.
 Isn't there something fun to do here??
 
 GoatRamp uses an NFC reader and a fork of a payment terminal to extract signatures from the card during payment. This unlocks two interesting primitives:
-- First, in the realm of identity, it becomes possible to prove that one possesses a credit card with certain characteristics. This data can be aggregated with tools like [semaphore](https://github.com/semaphore-protocol/semaphore), [zk-email](https://github.com/zkemail/), [proof of passport](https://github.com/zk-passport/proof-of-passport) or [totem](https://github.com/0xturboblitz/totem) to provide a more proof of unique identity.
+- First, in the realm of identity, it becomes possible to prove that one possesses a credit card with certain characteristics. This data can be aggregated with tools like [semaphore](https://github.com/semaphore-protocol/semaphore), [zk-email](https://github.com/zkemail/), [proof of passport](https://github.com/zk-passport/proof-of-passport) or [totem](https://github.com/0xturboblitz/totem) to provide one more proof of unique identity.
 - Second, it opens new pathways for trust-minimized onramps and offramps. In particular, it becomes possible for a user to prove that they did a fiat payment and withdraw funds locked on a smart-contract in a trustless manner. This creates a new way to merge traditional and decentralized finance that is more securing for both users and onramp services. We provide a proof of concept smart-contract allowing onramp using credit cards signatures.
 
 ### Architecture
