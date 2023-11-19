@@ -1,0 +1,41 @@
+name: Update dependencies
+
+on:
+  ? workflow_dispatch
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+        with:
+          submodules: true
+      - uses: actions/setup-java@a18c333f3f14249953dab3e186e5e21bf3390f1d # pin@3.1.0
+        with:
+          distribution: 'corretto'
+          java-version: '8'
+      - uses: eskatos/gradle-command-action@fd32ae908111fe31afa48827bd1ee909540aa971 # pin@v2.3.2
+        with:
+          gradle-version: current
+      - uses: actions-rs/toolchain@b2417cde72dcf67f306c0ae8e0828a81bf0b189f # pin@v1.0.6
+        with:
+          toolchain: stable
+      - run: sudo apt-get install -y libpcsclite-dev
+      - run: cargo install cargo-edit
+      - run: cd src/test/rust/simulator && cargo upgrade && cargo update && cargo test
+      - run: cd src/main/rust/cardtool && cargo upgrade && cargo update && cargo test
+      # NOTE: checkstyle version is fixed in build.gradle
+      - run: gradle dependencies --write-locks
+      - run: gradle --write-verification-metadata sha512 help
+      # dockerimage.yml is not triggered without repo scoped token, doing testing in the task, ref. https://github.com/peter-evans/create-pull-request/issues/48
+      - run: gradle build
+      - run: gradle -Pjc_version=3.0.5 --console=verbose clean cap --info
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@671dc9c9e0c2d73f07fa45a3eb0220e1622f0c5f # pin@v4.1.3
+        with:
+          title: Update dependencies
+          commit-message: Update dependencies
+          delete-branch: true

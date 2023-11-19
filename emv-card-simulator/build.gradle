@@ -1,0 +1,244 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    configurations.classpath {
+        resolutionStrategy.activateDependencyLocking()
+    }
+}
+
+plugins {
+    id 'java'
+    id 'checkstyle'
+    id 'groovy'
+}
+
+apply plugin: 'java'
+
+// set default properties
+// override in command line like: gradle deployPaymentApp -Pjc_version=2.2.2 -Ppaymentapp_cap_aid=A000000123456
+if (!project.hasProperty("jc_version")) {
+    ext.jc_version = "3.0.5"
+}
+if (!project.hasProperty("paymentapp_cap_aid")) {
+    ext.paymentapp_cap_aid = "AFFFFFFFFF0000"
+}
+if (!project.hasProperty("paymentapp_applet_aid")) {
+    ext.paymentapp_applet_aid = "AFFFFFFFFF1234"
+}
+
+// 3.1.0 targeting does not work
+/*if (jc_version == "3.1.0") {
+    // class major version 51
+    ext.java_version_compatible = 1.7
+    ext.jc_sdk = "jc310b43_kit"
+} else*/ if (jc_version == "3.0.5") {
+    // class major version 51
+    ext.java_version_compatible = 1.7
+    ext.jc_sdk = "jc305u3_kit"
+} else if (jc_version == "3.0.4") {
+    // class major version 50
+    ext.java_version_compatible = 1.6
+    ext.jc_sdk = "jc304_kit"
+} else if (jc_version == "3.0.1") {
+    // class major version 50
+    ext.java_version_compatible = 1.6
+    ext.jc_sdk = "jc303_kit"
+} else if (jc_version == "2.2.2") {
+    // class major version 49
+    ext.java_version_compatible = 1.5
+    ext.jc_sdk = "jc222_kit"
+} else if (jc_version == "2.2.1") {
+    // class major version 46
+    ext.java_version_compatible = 1.2
+    ext.jc_sdk = "jc221_kit"
+} else {
+    throw new GradleException("JavaCard version not recognized: ${jc_version}")
+}
+
+// Nix-shell pure environment's gradle does not find cargo somehow
+// working around via bash/cmd call
+ext.cmd_shell = "bash"
+ext.cmd_shell_option = "-c"
+if (System.properties['os.name'].toLowerCase().contains('windows')) {
+    ext.cmd_shell = "cmd"
+    ext.cmd_shell_option = "/c"
+}
+
+task buildSimulatorLibrary(type: Exec) {
+    group "Build"
+    description "Build Rust simulator library"
+    workingDir 'src/test/rust/simulator'
+
+    commandLine "${cmd_shell}", "${cmd_shell_option}", 'cargo build'
+}
+
+tasks.withType(Test) {
+    systemProperty "java.library.path", "../../rust/simulator/target/debug/"
+}
+
+checkstyle {
+    // Align version with verification-metadata.xml
+    toolVersion '8.27';
+}
+
+checkstyleMain {
+    source ='src/main/java'
+    maxWarnings = 0
+}
+
+checkstyleTest {
+    source ='src/test/java'
+    maxWarnings = 0
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    javacardAntTask
+}
+
+dependencies {
+
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:latest.release'
+
+    testImplementation (
+        'org.junit.jupiter:junit-jupiter-api:latest.release',
+        'com.klinec:jcardsim:latest.release'
+    )
+    implementation (
+        'com.klinec:jcardsim:latest.release'
+    )
+    javacardAntTask 'com.github.martinpaljak:ant-javacard:latest.release'
+}
+
+dependencyLocking {
+    lockAllConfigurations()
+}
+
+test {
+    dependsOn buildSimulatorLibrary
+    workingDir 'src/test/java/emvcardsimulator'
+
+    useJUnitPlatform()
+
+    testLogging {
+        outputs.upToDateWhen { false }
+        events "started", "skipped", "failed"
+        exceptionFormat "full"
+        showStandardStreams true
+    }
+
+    failFast = false
+}
+
+compileJava {
+    options.compilerArgs = [
+            '-Xlint:all',
+            '-Xlint:-options', //java 13 warns about Java 7 targetting
+            '-Xlint:-deprecation', // Some Java Card features are deprecated in 3.0.5 but we target earlier versions
+            '-Werror'
+    ]
+
+    // sourceCompatibility = java_version_compatible
+    // targetCompatibility = java_version_compatible
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+
+    // in case need to target for very old Java class major version
+    if (project.hasProperty("compile_javac_path")) {
+        options.fork = true
+        options.forkOptions.executable = "${compile_javac_path}"
+    }
+}
+
+compileTestJava {
+    options.compilerArgs = [
+            '-Xlint:all',
+            '-Xlint:-options', //java 13 warns about Java 7 targetting
+            '-Werror'
+    ]
+    // JUnit 5 requires Java 8 or newer
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+task downloadGp {
+    doLast {
+        String gpJar = 'gp.jar'
+        if (!new File(gpJar).exists()) {
+            String checksumExtension = '.sha512.tmp'
+            String gpJarTemp = gpJar + checksumExtension
+
+            ant.get(src: 'https://github.com/martinpaljak/GlobalPlatformPro/releases/download/v20.07.04/gp.jar', dest:gpJar)
+
+            ant.checksum(file: gpJar, algorithm:'SHA-512', fileext: checksumExtension)
+            String expectedChecksum = "4030c6eb46fb932c167f9a53fdbfab6b1364dbaafad5068b5bfc9779140cc1659e655d5ff53ee20d2823163011ede3ec9c3916632c2173cb6a1e17b84389490a"
+            String actualChecksum = new File(gpJarTemp).text.trim()
+            delete gpJarTemp
+
+            if (!expectedChecksum.equals(actualChecksum)) {
+                throw new GradleException("Checksum not valid! file: " + gpJar + ", expected: " + expectedChecksum + ", actual: " + actualChecksum)        
+            }
+        }
+    }
+}
+
+task cap {
+    dependsOn assemble
+    group "Build"
+    description "Assembles a cap archive containing the main classes."
+
+    doLast {
+        ant.taskdef(name: 'javacard', classname: 'pro.javacard.ant.JavaCard', classpath: configurations.javacardAntTask.asPath)
+
+        // 1PAY.SYS.DDF01
+        ant.javacard(jckit: "oracle_javacard_sdks/${jc_sdk}") {
+            cap (
+                package: 'emvcardsimulator',
+                version: '0.1',
+                output: 'build/pse.cap',
+                jca: 'build/pse.jca',
+                export: 'build',
+                classes: "build/classes/java/main",
+                aid: '315041592E000000000000000000') {
+                    applet (class: 'emvcardsimulator.PaymentSystemEnvironment', aid: '315041592E5359532E4444463031')
+            }
+        }
+
+        ant.javacard(jckit: "oracle_javacard_sdks/${jc_sdk}") {
+            cap (
+                package: 'emvcardsimulator',
+                version: '0.1',
+                output: 'build/paymentapp.cap',
+                jca: 'build/paymentapp.jca',
+                export: 'build',
+                classes: "build/classes/java/main",
+                aid: paymentapp_cap_aid) {
+                    applet (class: 'emvcardsimulator.PaymentApplication', aid: paymentapp_applet_aid)
+            }
+        }
+    }
+}
+
+// force delete might sometimes be needed?
+// java -jar gp.jar --delete A000000003 --force
+
+task deployPse(type: Exec) {
+    dependsOn downloadGp, cap
+    group "JavaCard"
+    description "Deploy PaymentSystemEnvironment applet to JavaCard"
+
+    commandLine 'java', '-jar', 'gp.jar', '--force', '--install', 'build/pse.cap'
+}
+
+task deployPaymentApp(type: Exec) {
+    dependsOn downloadGp, cap
+    group "JavaCard"
+    description "Deploy payment application applet to JavaCard"
+
+    commandLine 'java', '-jar', 'gp.jar', '--force', '--install', 'build/paymentapp.cap'
+}
