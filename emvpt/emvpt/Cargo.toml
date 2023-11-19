@@ -1,0 +1,26 @@
+[package]
+name = "emvpt"
+version = "0.1.0"
+authors = ["Mika Rautio"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dev-dependencies]
+
+[dependencies]
+iso7816-tlv = "0.4.3"
+hexplay = "0.2.1"
+asn1_der = "0.7.6"
+hex = "0.4.3"
+serde = { version = "1.0.171", features = ["derive"] }
+serde_yaml = "0.9.22"
+log = "0.4.19"
+log4rs = "1.2.0"
+rand_chacha = "0.3.1"
+rand = "0.8.5"
+# NOTE: mingw pre built binaries here: https://bintray.com/vszakats/generic/openssl
+openssl-sys = "0.9.90"
+openssl = "0.10.55"
+chrono = "0.4.26"
+regex = "1.9.1"
