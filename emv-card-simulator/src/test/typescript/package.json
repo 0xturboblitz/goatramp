@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@types/node": "^20.9.1",
+    "@types/node-forge": "^1.3.9",
+    "@types/node-rsa": "^1.1.4",
+    "asn1.js": "^5.4.1",
+    "crypto": "^1.0.1",
+    "node-forge": "^1.3.1",
+    "node-rsa": "^1.1.1"
+  }
+}
