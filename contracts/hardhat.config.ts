@@ -39,6 +39,14 @@ const config: HardhatUserConfig = {
       url: "https://alfajores-forno.celo-testnet.org",
       accounts: [process.env.PKEY as string],
     },
+    scoll: {
+      url: "https://sepolia-rpc.scroll.io/",
+      accounts: [process.env.PKEY as string],
+    },
+    zkevm: {
+      url: "https://rpc.public.zkevm-test.net",
+      accounts: [process.env.PKEY as string],
+    },
   },
 };
 

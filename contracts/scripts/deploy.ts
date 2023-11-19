@@ -1,7 +1,9 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const CreditCardVerifier = await ethers.getContractFactory("CreditCardVerifier");
+  const CreditCardVerifier = await ethers.getContractFactory(
+    "CreditCardVerifier"
+  );
   const ccVerifier = await CreditCardVerifier.deploy();
 
   await ccVerifier.waitForDeployment();
@@ -9,7 +11,8 @@ async function main() {
   console.log(`CreditCardVerifier deployed to ${ccVerifier.target}`);
 
   const GoatRamp = await ethers.getContractFactory("GOATRAMP");
-  const goatRamp = await GoatRamp.deploy(ccVerifier.target);
+  const token = "0xe2c6b1E40907973637C1fCe6caf848DC275596d4";
+  const goatRamp = await GoatRamp.deploy(ccVerifier.target, token);
 
   await goatRamp.waitForDeployment();
 
