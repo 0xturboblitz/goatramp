@@ -8,9 +8,9 @@ import {CreditCardVerifier} from "./CreditCardVerifier.sol";
 contract GOATRAMP is Ownable {
     CreditCardVerifier public immutable verifier;
     address public caPubkey = 0x0000000000000000000000000000000000000000;
-    address public token;
+    address public immutable token;
 
-    constructor(CreditCardVerifier _v) {
+    constructor(CreditCardVerifier _v, address _token) {
         verifier = _v;
         transferOwnership(msg.sender);
         token = _token;
