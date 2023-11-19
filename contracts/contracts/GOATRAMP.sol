@@ -2,15 +2,18 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {CreditCardVerifier} from "./CreditCardVerifier.sol";
 
 contract GOATRAMP is Ownable {
     CreditCardVerifier public immutable verifier;
     address public caPubkey = 0x0000000000000000000000000000000000000000;
+    address public immutable token;
 
-    constructor(CreditCardVerifier _v) {
+    constructor(CreditCardVerifier _v, address _token) {
         verifier = _v;
         transferOwnership(msg.sender);
+        token = _token;
     }
 
     function setcaPubKey(address _caPubKey) public onlyOwner {
@@ -39,6 +42,14 @@ contract GOATRAMP is Ownable {
 
         require(verifier.verifyProof(a, b, c, inputs), "Invalid Proof");
 
-        // Effects: Send token
+        IERC20(token).transfer(msg.sender, amount);
+    }
+
+    function deposit(uint256 amount) public onlyOwner {
+        IERC20(token).transferFrom(msg.sender, address(this), amount);
+    }
+
+    function withdraw(uint256 amount) public onlyOwner {
+        IERC20(token).transfer(msg.sender, amount);
     }
 }
