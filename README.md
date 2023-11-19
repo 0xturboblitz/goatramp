@@ -3,7 +3,7 @@
 Are you... the GOAT? 🐐
 
 When someone pays with a credit card on a payment terminal, the electronic chip in the credit card signs transaction data.
-Most often, the bank replies with an other signature to confirm the transaction.
+Most often, the bank replies with another signature to confirm the transaction.
 
 Isn't there something fun to do here??
 
@@ -15,6 +15,10 @@ GoatRamp uses an NFC reader and a fork of a payment terminal to extract signatur
 
 We forked [emvpt](https://github.com/mrautio/emvpt/) and [emv-card-simulator](https://github.com/mrautio/emv-card-simulator), which are minimal implementations of a payment terminal and a credit card.
 Additionally, we use NFC to read actual credit cards.
+
+<p align="center">
+  <img src="https://github.com/0xturboblitz/goatramp/assets/62038140/1e74ae16-377e-40e0-b43d-4ce67beda324" />
+</p>
 
 To provide succintness and selective disclosure of the transaction information, we verify the signatures in a zk-snark.
 The most common implementation of signature we found in EMV chips is RSA private key encryption with exponent of 3. This is unusual: instead of being signed with a hash function or being encrypted using the public key of another keypair, the raw message is exponentiated with the private key. It can thus be recovered with the public key.
