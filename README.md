@@ -28,13 +28,3 @@ We provide an implementation of rsa encryption check with exponent of 3 in circo
 ### Run it
 
 Instructions to run are provided in each subdirectories.
-
-### Deployments
-- Gnosis: 0xd7c3B15cbB931C8d48daCC6f622d451adCb382a3
-- Arbitrum Goerli: 0x9c891A2C692D672059a171b4499eC3c61093eC34
-- Polygon Mumbai: 0x8afc8DeF78136F05a3C139FD5A95cE02e4190A35
-- Scroll Testnet: 0x9c891A2C692D672059a171b4499eC3c61093eC34
-- Celo Alfajores: 0xd7c3B15cbB931C8d48daCC6f622d451adCb382a3
-- Base: 0x9c891A2C692D672059a171b4499eC3c61093eC34,
-- NeonEVM: 0x2C44D2c033C7EC6bF4eaf3000fa5094770F533be
-- Linea testnet: 0xBf79f2F49e9c4F1284149ddEFfB5CA4325bf4226
